@@ -1,0 +1,7 @@
+[package]
+name = "rust_smc"
+version = "0.1.0"
+authors = ["Jacob Rosenthal <jacobrosenthal@gmail.com>"]
+edition = "2018"
+
+[dependencies]
