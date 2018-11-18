@@ -1,0 +1,12 @@
+[package]
+name = "smc-examples"
+version = "0.1.0"
+authors = ["Jacob Rosenthal <jacobrosenthal@gmail.com>"]
+
+[dependencies.rust_smc]
+path = ".."
+
+
+[[bin]]
+name = "temperature"
+path = "src/temperature.rs"

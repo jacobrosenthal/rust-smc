@@ -1,0 +1,1 @@
+/Users/jacobrosenthal/Downloads/rust_smc/examples/target/debug/temperature-6bfaadb1d526d349.dSYM: /Users/jacobrosenthal/Downloads/rust_smc/examples/src/temperature.rs /Users/jacobrosenthal/Downloads/rust_smc/src/error.rs /Users/jacobrosenthal/Downloads/rust_smc/src/lib.rs /Users/jacobrosenthal/Downloads/rust_smc/src/smc_kit.rs

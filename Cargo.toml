@@ -4,4 +4,29 @@ version = "0.1.0"
 authors = ["Jacob Rosenthal <jacobrosenthal@gmail.com>"]
 edition = "2018"
 
+[lib]
+name = "rust_smc"
+crate_type = ["lib"]
+path = "src/lib.rs"
+
 [dependencies]
+IOKit-sys = "0.1.5"
+libc = "0.2"
+mach = "0.1.1"
+byteorder = { version = "1", default-features = false }
+strum = "0.11.0"
+strum_macros = "0.11.0"
+phf = "0.7.23"
+phf_macros = "0.7.21"
+
+[dependencies.encoding]
+git = "https://github.com/lifthrasiir/rust-encoding"
+
+
+[features]
+default = ["nightly"]
+
+nightly = ["try_trait", "existential_type"]
+
+try_trait = []
+existential_type = []
