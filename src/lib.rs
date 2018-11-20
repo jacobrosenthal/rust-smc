@@ -32,7 +32,7 @@ pub struct Smc {
     key_infos: HashMap<u32, SMCKeyData_keyInfo_t>,
 }
 
-impl Smc {
+impl<'a> Smc {
     pub fn new() -> SmcResult<Smc> {
         let service = get_service("AppleSMC")?;
 
@@ -50,6 +50,17 @@ impl Smc {
             connection,
             key_infos: HashMap::new(),
         })
+    }
+
+    pub fn iter(&self) -> Iter {
+        Key::iter()
+    }
+
+    pub fn get_sensor(&self) -> Sensor<'a> {
+        Sensor {
+            connection: self,
+            kind: None,
+        }
     }
 
     fn read(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
@@ -181,6 +192,11 @@ pub enum Key {
     TCXC,
     TC0P,
     TM0P,
+}
+
+struct Sensor<'a> {
+    connection: &'a Smc,
+    kind: Key,
 }
 
 impl Key {
