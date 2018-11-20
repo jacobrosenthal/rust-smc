@@ -1,6 +1,6 @@
 use strum::IntoEnumIterator;
 
-use rust_smc::{Key, Kind, Smc, SmcResult, Subsystem};
+use smc::{Key, Kind, Smc, SmcResult, Subsystem};
 
 fn main() -> SmcResult<()> {
     let mut smc = Smc::new()?;
