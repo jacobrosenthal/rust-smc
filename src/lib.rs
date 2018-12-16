@@ -1,17 +1,10 @@
 //these need to be in the root crate apparently if if theyre needed for the subfiles
-#![feature(int_to_from_bytes)]
 #![feature(slice_patterns)]
 #![feature(try_trait)]
 #![feature(plugin)]
 #![plugin(phf_macros)]
 
-// mod interface;
-// use self::interface::{parse_keyword, parse_type};
-// pub use self::interface::{Key, Kind, Type};
-
-extern crate strum;
-#[macro_use]
-extern crate strum_macros;
+use strum_macros::{EnumIter, EnumString, ToString};
 
 mod error;
 pub use self::error::{SmcError, SmcResult};
@@ -33,9 +26,6 @@ use IOKit_sys::{
     IOIteratorNext, IOObjectRelease, IOServiceClose, IOServiceGetMatchingServices,
     IOServiceMatching, IOServiceOpen,
 };
-
-// use encoding::all::ISO_8859_1;
-// use encoding::{EncoderTrap, Encoding};
 
 pub struct Smc {
     connection: io_connect_t,
@@ -61,10 +51,6 @@ impl Smc {
             key_infos: HashMap::new(),
         })
     }
-
-    // fn read_index_count(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
-    //     self.read_key("#KEY")
-    // }
 
     fn read(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
         let innn: *const c_void = &mut in_struct as *const _ as *const c_void;
@@ -130,12 +116,12 @@ impl Smc {
         let a = match data_type {
             Type::sp78 => 1.0f32,
             Type::ui32 => {
-                let &[a, b, c, d, _..] = &out_struct.bytes;
+                let &[a, b, c, d, ..] = &out_struct.bytes;
                 let four: [u8; 4] = [a, b, c, d];
                 u32::from_be_bytes(four) as f32
             }
             Type::ui16 => {
-                let &[a, b, _..] = &out_struct.bytes;
+                let &[a, b, ..] = &out_struct.bytes;
                 let two: [u8; 2] = [a, b];
                 u16::from_be_bytes(two) as f32
             }
@@ -197,8 +183,6 @@ pub enum Key {
     TM0P,
 }
 
-/// Enum describing the result of a call. Used by `call`, `callCode`, `callDelegate`, and
-/// `callStatic`.
 impl Key {
     //could use strum for this, but strum only does string atm
     //and I need to define kind and subsytem etc so might as well
