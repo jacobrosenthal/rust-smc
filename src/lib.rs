@@ -4,6 +4,7 @@
 #![feature(plugin)]
 #![plugin(phf_macros)]
 
+use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, EnumString, ToString};
 
 mod error;
@@ -13,8 +14,6 @@ mod smc_kit;
 use self::smc_kit::{
     SMCKeyData_keyInfo_t, SMCKeyData_t, KERNEL_INDEX_SMC, SMC_CMD_READ_BYTES, SMC_CMD_READ_KEYINFO,
 };
-
-use std::collections::HashMap;
 
 use libc::c_void;
 use mach::kern_return::KERN_SUCCESS;
@@ -29,7 +28,6 @@ use IOKit_sys::{
 
 pub struct Smc {
     connection: io_connect_t,
-    key_infos: HashMap<u32, SMCKeyData_keyInfo_t>,
 }
 
 impl<'a> Smc {
@@ -46,21 +44,15 @@ impl<'a> Smc {
             return Err(SmcError::new(""));
         }
 
-        Ok(Smc {
-            connection,
-            key_infos: HashMap::new(),
-        })
+        Ok(Smc { connection })
     }
 
-    pub fn iter(&self) -> Iter {
+    pub fn iter(&self) -> KeyIter {
         Key::iter()
     }
 
-    pub fn get_sensor(&self) -> Sensor<'a> {
-        Sensor {
-            connection: self,
-            kind: None,
-        }
+    pub fn get_sensor(&'a self, key: Key) -> Sensor<'a> {
+        Sensor::new(key, &self)
     }
 
     fn read(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
@@ -89,12 +81,7 @@ impl<'a> Smc {
         Ok(out_struct)
     }
 
-    //not sure if I want to cache, he seemed to think it was worthwhile..
-    fn cache_read_key_info(&mut self, key_sum: u32) -> SmcResult<SMCKeyData_keyInfo_t> {
-        if let Some(key_info) = self.key_infos.get(&key_sum) {
-            return Ok(key_info.clone());
-        }
-
+    fn read_key_info(&self, key_sum: u32) -> SmcResult<SMCKeyData_keyInfo_t> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_KEYINFO,
             key: key_sum,
@@ -102,7 +89,6 @@ impl<'a> Smc {
         };
 
         let out_struct = self.read(in_struct)?;
-        self.key_infos.insert(key_sum, out_struct.key_info.clone());
         Ok(out_struct.key_info)
     }
 
@@ -111,8 +97,7 @@ impl<'a> Smc {
     //     Ok(a)
     // }
 
-    pub fn read_key(&mut self, key: &Key) -> SmcResult<f32> {
-        let key_info = self.cache_read_key_info(key.value())?;
+    pub fn read_key(&self, key: &Key, key_info: SMCKeyData_keyInfo_t) -> SmcResult<f32> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_BYTES,
             key: key.value(),
@@ -194,9 +179,35 @@ pub enum Key {
     TM0P,
 }
 
-struct Sensor<'a> {
-    connection: &'a Smc,
-    kind: Key,
+pub struct Sensor<'a> {
+    smc: &'a Smc,
+    key: Key,
+    key_info: SMCKeyData_keyInfo_t,
+}
+
+impl<'a> Sensor<'a> {
+    pub fn new(key: Key, smc: &'a Smc) -> Sensor<'a> {
+        let val = key.value();
+        Sensor {
+            smc: &smc,
+            key: key,
+            key_info: smc.read_key_info(val).unwrap(),
+        }
+    }
+    pub fn name(&self) -> &'static str {
+        self.key.name()
+    }
+    pub fn read(&self) -> SmcResult<f32> {
+        self.smc.read_key(&self.key, self.key_info)
+    }
+
+    pub fn subsystem(&self) -> Subsystem {
+        self.key.subsystem()
+    }
+
+    pub fn kind(&self) -> Kind {
+        self.key.kind()
+    }
 }
 
 impl Key {
