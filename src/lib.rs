@@ -51,6 +51,13 @@ impl<'a> Smc {
         Key::iter()
     }
 
+    pub fn find<F: Fn(&Key) -> bool>(&self, pred: F) -> impl Iterator<Item = Sensor> {
+        //explicit move ok?
+        self.iter()
+            .filter(pred)
+            .map(move |key| Sensor::new(key, &self))
+    }
+
     pub fn get_sensor(&'a self, key: Key) -> Sensor<'a> {
         Sensor::new(key, &self)
     }
