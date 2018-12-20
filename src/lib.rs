@@ -231,7 +231,7 @@ impl<'a> Sensor<'a> {
             key_info: smc.read_key_info(val)?,
         })
     }
-    pub fn name(&self) -> &'static str {
+    pub fn name(&self) -> &str {
         self.key.name()
     }
     pub fn read(&self) -> SmcResult<f32> {
@@ -251,7 +251,7 @@ impl Key {
     //could use strum for this, but strum only does string atm
     //and I need to define kind and subsytem etc so might as well
     //just do it this way for now
-    pub fn name(&self) -> &'static str {
+    pub fn name(&self) -> &str {
         match *self {
             Key::TCXC => "TCXC",
             Key::TC0P => "TC0P",
