@@ -196,7 +196,15 @@ use std::fmt;
 
 impl<'a> fmt::Display for Sensor<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({})", self.name())
+        let mut kind;
+
+        match self.kind() {
+            Kind::Temperature => kind = "🌡️".to_string(),
+            Kind::Fan => kind = "💨".to_string(),
+            Kind::Unknown => kind = "👽".to_string()
+        }
+
+        write!(f, "({}, {})", kind, self.name())
     }
 }
 
