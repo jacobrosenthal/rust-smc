@@ -237,7 +237,9 @@ impl<'a> fmt::Display for Sensor<'a> {
             Kind::Unknown => kind = "👽".to_string(),
         }
 
-        write!(f, "({}, {})", kind, self.name())
+        let reading = self.read().unwrap_or_else(|_| 0.0);
+
+        write!(f, "{}, {}, {:.*}°C", kind, self.name(), 2, reading)
     }
 }
 
