@@ -1,15 +1,16 @@
-use smc::{Kind, Smc, SmcResult, Subsystem};
+use smc::{Kind, Smc, SmcResult};
+use std::{thread, time};
 
 fn main() -> SmcResult<()> {
     let smc = Smc::new()?;
 
-    // sensors have nontrivial init cost so you may wish to keep them around
-    let sensors =
-        smc.find(|key| key.subsystem() == Subsystem::Cpu && key.kind() == Kind::Temperature);
+    // sensors have nontrivial newup cost so you may wish to keep these around
+    let sensors = smc.find(|key| key.kind() == Kind::Temperature);
 
-    for sensor in sensors {
-        println!("{:?}, {}", sensor.name(), sensor.read()?);
+    loop {
+        for sensor in sensors.clone() {
+            println!("{:?}, {}", sensor.name(), sensor.read()?);
+        }
+        thread::sleep(time::Duration::from_millis(10000));
     }
-
-    Ok(())
 }

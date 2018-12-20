@@ -51,14 +51,16 @@ impl<'a> Smc {
         Key::iter()
     }
 
-    pub fn find<F: Fn(&Key) -> bool>(&self, pred: F) -> impl Iterator<Item = Sensor> {
-        //explicit move ok?
+    pub fn find<F: Clone + Fn(&Key) -> bool>(
+        &self,
+        pred: F,
+    ) -> impl Iterator<Item = Sensor> + Clone {
         self.iter()
             .filter(pred)
             .map(move |key| Sensor::new(key, &self))
+            .filter_map(Result::ok)
     }
-
-    pub fn get_sensor(&'a self, key: Key) -> Sensor<'a> {
+    pub fn get_sensor(&'a self, key: Key) -> SmcResult<Sensor<'a>> {
         Sensor::new(key, &self)
     }
 
@@ -193,13 +195,13 @@ pub struct Sensor<'a> {
 }
 
 impl<'a> Sensor<'a> {
-    pub fn new(key: Key, smc: &'a Smc) -> Sensor<'a> {
+    pub fn new(key: Key, smc: &'a Smc) -> SmcResult<Sensor<'a>> {
         let val = key.value();
-        Sensor {
+        Ok(Sensor {
             smc: &smc,
             key: key,
-            key_info: smc.read_key_info(val).unwrap(),
-        }
+            key_info: smc.read_key_info(val)?,
+        })
     }
     pub fn name(&self) -> &'static str {
         self.key.name()
