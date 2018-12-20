@@ -192,6 +192,14 @@ pub struct Sensor<'a> {
     key_info: SMCKeyData_keyInfo_t,
 }
 
+use std::fmt;
+
+impl<'a> fmt::Display for Sensor<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({})", self.name())
+    }
+}
+
 impl<'a> Sensor<'a> {
     pub fn new(key: Key, smc: &'a Smc) -> Sensor<'a> {
         let val = key.value();
