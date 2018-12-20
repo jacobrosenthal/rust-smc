@@ -19,6 +19,7 @@ use libc::c_void;
 use mach::kern_return::KERN_SUCCESS;
 use mach::traps::mach_task_self;
 use std::ffi::CString;
+use std::fmt;
 use std::mem;
 use IOKit_sys::{
     io_connect_t, io_iterator_t, io_object_t, kIOMasterPortDefault, IOConnectCallStructMethod,
@@ -220,6 +221,20 @@ pub struct Sensor<'a> {
     smc: &'a Smc,
     key: Key,
     key_info: SMCKeyData_keyInfo_t,
+}
+
+impl<'a> fmt::Display for Sensor<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut kind;
+
+        match self.kind() {
+            Kind::Temperature => kind = "🌡️".to_string(),
+            Kind::Fan => kind = "💨".to_string(),
+            Kind::Unknown => kind = "👽".to_string()
+        }
+
+        write!(f, "({}, {})", kind, self.name())
+    }
 }
 
 impl<'a> Sensor<'a> {
