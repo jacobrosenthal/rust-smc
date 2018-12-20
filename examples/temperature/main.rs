@@ -1,17 +1,16 @@
-use strum::IntoEnumIterator;
-
-use smc::{Key, Kind, Smc, SmcResult, Subsystem};
+use smc::{Kind, Smc, SmcResult};
+use std::{thread, time};
 
 fn main() -> SmcResult<()> {
-    let mut smc = Smc::new()?;
+    let smc = Smc::new()?;
 
-    let iter = Key::iter()
-        .filter(|key| key.subsystem() == Subsystem::Cpu && key.kind() == Kind::Temperature);
+    // sensors have nontrivial newup cost so you may wish to keep these around
+    let sensors = smc.find(|key| key.kind() == Kind::Temperature);
 
-    for key in iter {
-        let value = smc.read_key(&key)?;
-        println!("{:?}, {}", key, value);
+    loop {
+        for sensor in sensors.clone() {
+            println!("{:?}, {}", sensor.name(), sensor.read()?);
+        }
+        thread::sleep(time::Duration::from_millis(10000));
     }
-
-    Ok(())
 }

@@ -4,6 +4,7 @@
 #![feature(plugin)]
 #![plugin(phf_macros)]
 
+use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, EnumString, ToString};
 
 mod error;
@@ -14,12 +15,11 @@ use self::smc_kit::{
     SMCKeyData_keyInfo_t, SMCKeyData_t, KERNEL_INDEX_SMC, SMC_CMD_READ_BYTES, SMC_CMD_READ_KEYINFO,
 };
 
-use std::collections::HashMap;
-
 use libc::c_void;
 use mach::kern_return::KERN_SUCCESS;
 use mach::traps::mach_task_self;
 use std::ffi::CString;
+use std::fmt;
 use std::mem;
 use IOKit_sys::{
     io_connect_t, io_iterator_t, io_object_t, kIOMasterPortDefault, IOConnectCallStructMethod,
@@ -29,10 +29,9 @@ use IOKit_sys::{
 
 pub struct Smc {
     connection: io_connect_t,
-    key_infos: HashMap<u32, SMCKeyData_keyInfo_t>,
 }
 
-impl Smc {
+impl<'a> Smc {
     pub fn new() -> SmcResult<Smc> {
         let service = get_service("AppleSMC")?;
 
@@ -46,10 +45,24 @@ impl Smc {
             return Err(SmcError::new(""));
         }
 
-        Ok(Smc {
-            connection,
-            key_infos: HashMap::new(),
-        })
+        Ok(Smc { connection })
+    }
+
+    pub fn iter(&self) -> KeyIter {
+        Key::iter()
+    }
+
+    pub fn find<F: Clone + Fn(&Key) -> bool>(
+        &self,
+        pred: F,
+    ) -> impl Iterator<Item = Sensor> + Clone {
+        self.iter()
+            .filter(pred)
+            .map(move |key| Sensor::new(key, &self))
+            .filter_map(Result::ok)
+    }
+    pub fn get_sensor(&'a self, key: Key) -> SmcResult<Sensor<'a>> {
+        Sensor::new(key, &self)
     }
 
     fn read(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
@@ -75,15 +88,14 @@ impl Smc {
             return Err(SmcError::new(""));
         }
 
+        if out_struct.result > 0 {
+            return Err(SmcError::new(""));
+        }
+
         Ok(out_struct)
     }
 
-    //not sure if I want to cache, he seemed to think it was worthwhile..
-    fn cache_read_key_info(&mut self, key_sum: u32) -> SmcResult<SMCKeyData_keyInfo_t> {
-        if let Some(key_info) = self.key_infos.get(&key_sum) {
-            return Ok(key_info.clone());
-        }
-
+    fn read_key_info(&self, key_sum: u32) -> SmcResult<SMCKeyData_keyInfo_t> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_KEYINFO,
             key: key_sum,
@@ -91,7 +103,6 @@ impl Smc {
         };
 
         let out_struct = self.read(in_struct)?;
-        self.key_infos.insert(key_sum, out_struct.key_info.clone());
         Ok(out_struct.key_info)
     }
 
@@ -100,8 +111,7 @@ impl Smc {
     //     Ok(a)
     // }
 
-    pub fn read_key(&mut self, key: &Key) -> SmcResult<f32> {
-        let key_info = self.cache_read_key_info(key.value())?;
+    pub fn read_key(&self, key: &Key, key_info: SMCKeyData_keyInfo_t) -> SmcResult<f32> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_BYTES,
             key: key.value(),
@@ -181,17 +191,110 @@ pub enum Key {
     TCXC,
     TC0P,
     TM0P,
+    TC0H,
+    TC0D,
+    TC0E,
+    TC0F,
+    TC1C,
+    TC2C,
+    TC3C,
+    TC4C,
+    TC5C,
+    TC6C,
+    TC7C,
+    TC8C,
+    TCAH,
+    TCAD,
+    TC1P,
+    TC1H,
+    TC1D,
+    TC1E,
+    TC1F,
+    TCBH,
+    TCBD,
+    TCSC,
+    TCSA,
+    TCGC,
+}
+
+pub struct Sensor<'a> {
+    smc: &'a Smc,
+    key: Key,
+    key_info: SMCKeyData_keyInfo_t,
+}
+
+impl<'a> fmt::Display for Sensor<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut kind;
+
+        match self.kind() {
+            Kind::Temperature => kind = "🌡️".to_string(),
+            Kind::Fan => kind = "💨".to_string(),
+            Kind::Unknown => kind = "👽".to_string()
+        }
+
+        write!(f, "({}, {})", kind, self.name())
+    }
+}
+
+impl<'a> Sensor<'a> {
+    pub fn new(key: Key, smc: &'a Smc) -> SmcResult<Sensor<'a>> {
+        let val = key.value();
+        Ok(Sensor {
+            smc: &smc,
+            key: key,
+            key_info: smc.read_key_info(val)?,
+        })
+    }
+    pub fn name(&self) -> &str {
+        self.key.name()
+    }
+    pub fn read(&self) -> SmcResult<f32> {
+        self.smc.read_key(&self.key, self.key_info)
+    }
+
+    pub fn subsystem(&self) -> Subsystem {
+        self.key.subsystem()
+    }
+
+    pub fn kind(&self) -> Kind {
+        self.key.kind()
+    }
 }
 
 impl Key {
     //could use strum for this, but strum only does string atm
     //and I need to define kind and subsytem etc so might as well
     //just do it this way for now
-    pub fn name(&self) -> &'static str {
+    pub fn name(&self) -> &str {
         match *self {
             Key::TCXC => "TCXC",
             Key::TC0P => "TC0P",
             Key::TM0P => "TM0P",
+            Key::TC0H => "TC0H",
+            Key::TC0D => "TC0D",
+            Key::TC0E => "TC0E",
+            Key::TC0F => "TC0F",
+            Key::TC1C => "TC1C",
+            Key::TC2C => "TC2C",
+            Key::TC3C => "TC3C",
+            Key::TC4C => "TC4C",
+            Key::TC5C => "TC5C",
+            Key::TC6C => "TC6C",
+            Key::TC7C => "TC7C",
+            Key::TC8C => "TC8C",
+            Key::TCAH => "TCAH",
+            Key::TCAD => "TCAD",
+            Key::TC1P => "TC1P",
+            Key::TC1H => "TC1H",
+            Key::TC1D => "TC1D",
+            Key::TC1E => "TC1E",
+            Key::TC1F => "TC1F",
+            Key::TCBH => "TCBH",
+            Key::TCBD => "TCBD",
+            Key::TCSC => "TCSC",
+            Key::TCSA => "TCSA",
+            Key::TCGC => "TCGC",
             // _ => "",
         }
     }
@@ -212,8 +315,32 @@ impl Key {
     pub fn kind(&self) -> Kind {
         match *self {
             Key::TCXC => Kind::Temperature,
-            Key::TC0P => Kind::Fan,
-            Key::TM0P => Kind::Unknown,
+            Key::TC0P => Kind::Temperature,
+            Key::TM0P => Kind::Temperature,
+            Key::TC0H => Kind::Temperature,
+            Key::TC0D => Kind::Temperature,
+            Key::TC0E => Kind::Temperature,
+            Key::TC0F => Kind::Temperature,
+            Key::TC1C => Kind::Temperature,
+            Key::TC2C => Kind::Temperature,
+            Key::TC3C => Kind::Temperature,
+            Key::TC4C => Kind::Temperature,
+            Key::TC5C => Kind::Temperature,
+            Key::TC6C => Kind::Temperature,
+            Key::TC7C => Kind::Temperature,
+            Key::TC8C => Kind::Temperature,
+            Key::TCAH => Kind::Temperature,
+            Key::TCAD => Kind::Temperature,
+            Key::TC1P => Kind::Temperature,
+            Key::TC1H => Kind::Temperature,
+            Key::TC1D => Kind::Temperature,
+            Key::TC1E => Kind::Temperature,
+            Key::TC1F => Kind::Temperature,
+            Key::TCBH => Kind::Temperature,
+            Key::TCBD => Kind::Temperature,
+            Key::TCSC => Kind::Temperature,
+            Key::TCSA => Kind::Temperature,
+            Key::TCGC => Kind::Temperature,
         }
     }
 
@@ -222,7 +349,31 @@ impl Key {
         match *self {
             Key::TCXC => Subsystem::Cpu,
             Key::TC0P => Subsystem::Cpu,
-            Key::TM0P => Subsystem::Mainboard,
+            Key::TM0P => Subsystem::Cpu,
+            Key::TC0H => Subsystem::Cpu,
+            Key::TC0D => Subsystem::Cpu,
+            Key::TC0E => Subsystem::Cpu,
+            Key::TC0F => Subsystem::Cpu,
+            Key::TC1C => Subsystem::Cpu,
+            Key::TC2C => Subsystem::Cpu,
+            Key::TC3C => Subsystem::Cpu,
+            Key::TC4C => Subsystem::Cpu,
+            Key::TC5C => Subsystem::Cpu,
+            Key::TC6C => Subsystem::Cpu,
+            Key::TC7C => Subsystem::Cpu,
+            Key::TC8C => Subsystem::Cpu,
+            Key::TCAH => Subsystem::Cpu,
+            Key::TCAD => Subsystem::Cpu,
+            Key::TC1P => Subsystem::Cpu,
+            Key::TC1H => Subsystem::Cpu,
+            Key::TC1D => Subsystem::Cpu,
+            Key::TC1E => Subsystem::Cpu,
+            Key::TC1F => Subsystem::Cpu,
+            Key::TCBH => Subsystem::Cpu,
+            Key::TCBD => Subsystem::Cpu,
+            Key::TCSC => Subsystem::SystemAgent,
+            Key::TCSA => Subsystem::SystemAgent,
+            Key::TCGC => Subsystem::Gpu,
         }
     }
 }
@@ -236,6 +387,7 @@ pub enum Subsystem {
     Sensor,
     Battery,
     Mainboard,
+    SystemAgent,
     Unknown,
 }
 
