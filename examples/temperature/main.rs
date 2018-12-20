@@ -8,7 +8,7 @@ fn main() -> SmcResult<()> {
         smc.find(|key| key.subsystem() == Subsystem::Cpu && key.kind() == Kind::Temperature);
 
     for sensor in sensors {
-        println!("{:?}, {}", sensor.name(), sensor.read()?);
+        println!("{}", sensor);
     }
 
     Ok(())
