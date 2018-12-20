@@ -124,7 +124,11 @@ impl<'a> Smc {
         let data_type = parse_type(key_info.data_type)?;
 
         let a = match data_type {
-            Type::sp78 => 1.0f32,
+            Type::sp78 => {
+                let &[a, b, ..] = &out_struct.bytes;
+                let two: [u8; 2] = [a, b];
+                u16::from_be_bytes(two) as f32 / 256.0
+            }
             Type::ui32 => {
                 let &[a, b, c, d, ..] = &out_struct.bytes;
                 let four: [u8; 4] = [a, b, c, d];
@@ -230,7 +234,7 @@ impl<'a> fmt::Display for Sensor<'a> {
         match self.kind() {
             Kind::Temperature => kind = "🌡️".to_string(),
             Kind::Fan => kind = "💨".to_string(),
-            Kind::Unknown => kind = "👽".to_string()
+            Kind::Unknown => kind = "👽".to_string(),
         }
 
         write!(f, "({}, {})", kind, self.name())
