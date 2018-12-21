@@ -106,11 +106,6 @@ impl<'a> Smc {
         Ok(out_struct.key_info)
     }
 
-    // fn format(&self, data_type: Type, bytes: &[u8]) -> SmcResult<f32> {
-
-    //     Ok(a)
-    // }
-
     pub fn read_key(&self, key: &Key, key_info: SMCKeyData_keyInfo_t) -> SmcResult<f32> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_BYTES,
@@ -121,36 +116,59 @@ impl<'a> Smc {
 
         let out_struct = self.read(in_struct)?;
 
-        let data_type = parse_type(key_info.data_type)?;
-
-        let a = match data_type {
-            Type::sp78 => {
-                let &[a, b, ..] = &out_struct.bytes;
-                let two: [u8; 2] = [a, b];
-                u16::from_be_bytes(two) as f32 / 256.0
-            }
-            Type::ui32 => {
-                let &[a, b, c, d, ..] = &out_struct.bytes;
-                let four: [u8; 4] = [a, b, c, d];
-                u32::from_be_bytes(four) as f32
-            }
-            Type::ui16 => {
-                let &[a, b, ..] = &out_struct.bytes;
-                let two: [u8; 2] = [a, b];
-                u16::from_be_bytes(two) as f32
-            }
-            Type::ui8 => {
-                // let &[a _..] = &out_struct.bytes;
-                // let two: [u8; 2] = [a, b];
-                // u16::from_be_bytes(two) as f32
-                out_struct.bytes[0] as f32
-            }
-
-            _ => -1.0,
-        };
-
-        Ok(a)
+        parse_value(key_info, out_struct.bytes)
     }
+}
+
+fn parse_value(key_info: SMCKeyData_keyInfo_t, bytes: [u8; 32]) -> SmcResult<f32> {
+    let data_type = parse_type(key_info.data_type)?;
+
+    let thing = match key_info.data_size {
+        2 => {
+            let &[a, b, ..] = &bytes;
+            let two: [u8; 2] = [a, b];
+            u16::from_be_bytes(two) as u32
+        }
+        4 => {
+            let &[a, b, c, d, ..] = &bytes;
+            let four: [u8; 4] = [a, b, c, d];
+            u32::from_be_bytes(four)
+        }
+        _ => 0,
+    };
+
+    let value = match data_type {
+        Type::sp1e => thing as f32 / 16384.0,
+        Type::sp3c => thing as f32 / 4096.0,
+        Type::sp4b => thing as f32 / 2048.0,
+        Type::sp5a => thing as f32 / 1024.0,
+        Type::sp69 => thing as f32 / 512.0,
+        Type::sp78 => thing as f32 / 256.0,
+        Type::sp87 => thing as f32 / 128.0,
+        Type::sp96 => thing as f32 / 64.0,
+        Type::spb4 => thing as f32 / 16.0,
+        Type::spf0 => thing as f32,
+        Type::fp1f => thing as f32 / 32768.0,
+        Type::fp4c => thing as f32 / 4096.0,
+        Type::fp5b => thing as f32 / 2048.0,
+        Type::fp6a => thing as f32 / 1024.0,
+        Type::fp79 => thing as f32 / 512.0,
+        Type::fp88 => thing as f32 / 256.0,
+        Type::fpa6 => thing as f32 / 64.0,
+        Type::fpc4 => thing as f32 / 16.0,
+        Type::fpe2 => thing as f32 / 4.0,
+        Type::flt => thing as f32,
+        Type::ui32 => {
+            thing as f32 //todo as u32
+        }
+        Type::ui16 => {
+            thing as f32 //todo as u16
+        }
+        Type::ui8 => bytes[0] as f32, //todo as u8
+        _ => 0.0,
+    };
+
+    Ok(value)
 }
 
 impl Drop for Smc {
@@ -407,15 +425,25 @@ pub enum Kind {
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, EnumString, EnumIter, ToString)]
 pub enum Type {
+    fp1f,
+    fp4c,
     fp5b,
+    fp6a,
+    fp79,
+    fp88,
     fpa6,
     fpc4,
+    fpe2,
     sp1e,
     sp3c,
     sp4b,
+    sp5a,
     sp96,
+    sp78,
+    sp87,
     spb4,
     spf0,
+    sp69,
     pwm,
     ui32,
     ui8,
@@ -423,17 +451,12 @@ pub enum Type {
     ui16,
     hex,
     ch8,
-    fp88,
     ali,
     alp,
     alc,
-    fp1f,
     alv,
     si16,
-    sp87,
-    sp78,
     flt,
-    sp5a,
     si8,
     clc,
     clh,
@@ -441,10 +464,7 @@ pub enum Type {
     lim,
     lkb,
     lks,
-    fpe2,
     fds,
-    fp79,
-    fp6a,
     mss,
     rev,
     char,
@@ -454,6 +474,7 @@ static TYPES: phf::Map<u32, Type> = phf_map! {
     1718629730u32 => Type::fp5b,
     1718640950u32 => Type::fpa6,
     1718641460u32 => Type::fpc4,
+    1718629475u32 => Type::fp4c,
     1936732517u32 => Type::sp1e,
     1936733027u32 => Type::sp3c,
     1936733282u32 => Type::sp4b,
@@ -476,6 +497,7 @@ static TYPES: phf::Map<u32, Type> = phf_map! {
     1936273718u32 => Type::si16,
     1936734263u32 => Type::sp87,
     1936734008u32 => Type::sp78,
+    1936733753u32 => Type::sp69,
     1718383648u32 => Type::flt,
     1936733537u32 => Type::sp5a,
     1936275488u32 => Type::si8,
