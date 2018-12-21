@@ -38,7 +38,10 @@ impl<'a> Smc {
         };
 
         if kern_result != KERN_SUCCESS {
-            return Err(SmcError::new(""));
+            return Err(SmcError::new(&format!(
+                "IOServiceOpen failed {}",
+                kern_result
+            )));
         }
 
         Ok(Smc { connection })
@@ -82,11 +85,19 @@ impl<'a> Smc {
             )
         };
         if kern_result != KERN_SUCCESS {
-            return Err(SmcError::new(""));
+            return Err(SmcError::new(&format!("read failed {}", kern_result)));
+        }
+
+        //todo.. should probably be a different error to differentiate from non recoverable errors
+        if out_struct.result == 132 {
+            return Err(SmcError::new("read returned but key not found"));
         }
 
         if out_struct.result > 0 {
-            return Err(SmcError::new(""));
+            return Err(SmcError::new(&format!(
+                "read returned {}",
+                out_struct.result
+            )));
         }
 
         Ok(out_struct)
@@ -132,7 +143,7 @@ fn get_service(key: &str) -> SmcResult<io_object_t> {
 
     let matching_dictionary = unsafe { IOServiceMatching(cstring.as_ptr()) };
     if matching_dictionary.is_null() {
-        return Err(SmcError::new(""));
+        return Err(SmcError::new("IOServiceMatching failed"));
     }
 
     let mut iterator: io_iterator_t = Default::default();
@@ -141,7 +152,10 @@ fn get_service(key: &str) -> SmcResult<io_object_t> {
         IOServiceGetMatchingServices(kIOMasterPortDefault, matching_dictionary, &mut iterator)
     };
     if result != KERN_SUCCESS {
-        return Err(SmcError::new(""));
+        return Err(SmcError::new(&format!(
+            "IOServiceGetMatchingServices failed {}",
+            result
+        )));
     }
 
     let service = unsafe { IOIteratorNext(iterator) };
@@ -150,7 +164,7 @@ fn get_service(key: &str) -> SmcResult<io_object_t> {
     }
 
     if service == 0 {
-        return Err(SmcError::new(""));
+        return Err(SmcError::new("IOIteratorNext failed"));
     }
 
     Ok(service)
