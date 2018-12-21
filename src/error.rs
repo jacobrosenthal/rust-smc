@@ -1,8 +1,7 @@
 use std::error::Error;
 use std::ffi::NulError;
-use std::option::NoneError;
-
 use std::fmt;
+use std::option::NoneError;
 
 pub type SmcResult<T> = Result<T, SmcError>;
 
