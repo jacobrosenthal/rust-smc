@@ -9,19 +9,15 @@ use IOKit_sys::{
     IOServiceMatching, IOServiceOpen,
 };
 
+use crate::error::{SmcError, SmcResult};
 use crate::general::{parse_type, parse_value};
-pub use crate::general::{Kind, Subsystem, Type};
-use strum::IntoEnumIterator;
-
-pub use crate::key::Key;
-
-pub use crate::error::{SmcError, SmcResult};
-
+use crate::key::Key;
+use crate::sensor::Sensor;
 use crate::smc_kit::{
     SMCKeyData_keyInfo_t, SMCKeyData_t, KERNEL_INDEX_SMC, SMC_CMD_READ_BYTES, SMC_CMD_READ_KEYINFO,
 };
 
-pub use crate::sensor::Sensor;
+use strum::IntoEnumIterator;
 
 pub struct Smc {
     connection: io_connect_t,
