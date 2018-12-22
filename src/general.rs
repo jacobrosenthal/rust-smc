@@ -1,4 +1,16 @@
+use std::convert::AsMut;
 use strum_macros::{EnumIter, EnumString, ToString};
+
+//https://stackoverflow.com/questions/37668886/slice-to-fixed-size-array
+fn clone_into_array<A, T>(slice: &[T]) -> A
+where
+    A: Sized + Default + AsMut<[T]>,
+    T: Clone,
+{
+    let mut a = Default::default();
+    <A as AsMut<[T]>>::as_mut(&mut a).clone_from_slice(slice);
+    a
+}
 
 #[derive(PartialEq)]
 pub enum Subsystem {
@@ -120,16 +132,8 @@ pub fn parse_type(type_: u32) -> Option<Type> {
 
 pub fn parse_value(data_size: u32, data_type: Type, bytes: [u8; 32]) -> f32 {
     let thing = match data_size {
-        2 => {
-            let &[a, b, ..] = &bytes;
-            let two: [u8; 2] = [a, b];
-            u16::from_be_bytes(two) as u32
-        }
-        4 => {
-            let &[a, b, c, d, ..] = &bytes;
-            let four: [u8; 4] = [a, b, c, d];
-            u32::from_be_bytes(four)
-        }
+        2 => u16::from_be_bytes(clone_into_array(&bytes[0..2])) as u32,
+        4 => u32::from_be_bytes(clone_into_array(&bytes[0..4])) as u32,
         _ => 0,
     };
 
