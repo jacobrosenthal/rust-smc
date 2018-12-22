@@ -10,7 +10,7 @@ use IOKit_sys::{
 };
 
 use crate::error::{SmcError, SmcResult};
-use crate::general::{parse_type, parse_value};
+use crate::general::{lookup_type, parse_value};
 use crate::key::Key;
 use crate::sensor::Sensor;
 use crate::smc_kit::{
@@ -120,7 +120,7 @@ impl<'a> Smc {
 
         let out_struct = self.read(in_struct)?;
 
-        let data_type = parse_type(key_info.data_type);
+        let data_type = lookup_type(key_info.data_type);
 
         let data_type = match data_type {
             Some(file) => file,

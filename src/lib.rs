@@ -1,6 +1,3 @@
-#![feature(plugin)]
-#![plugin(phf_macros)]
-
 mod general;
 pub use crate::general::{Kind, Subsystem, Type};
 

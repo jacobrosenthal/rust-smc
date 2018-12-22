@@ -1,5 +1,4 @@
 use std::convert::AsMut;
-use strum_macros::{EnumIter, EnumString, ToString};
 
 //https://stackoverflow.com/questions/37668886/slice-to-fixed-size-array
 fn clone_into_array<A, T>(slice: &[T]) -> A
@@ -33,7 +32,7 @@ pub enum Kind {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy, EnumString, EnumIter, ToString)]
+#[derive(Clone, Copy)]
 pub enum Type {
     fp1f,
     fp4c,
@@ -80,54 +79,53 @@ pub enum Type {
     char,
 }
 
-static TYPES: phf::Map<u32, Type> = phf_map! {
-    1718629730u32 => Type::fp5b,
-    1718640950u32 => Type::fpa6,
-    1718641460u32 => Type::fpc4,
-    1718629475u32 => Type::fp4c,
-    1936732517u32 => Type::sp1e,
-    1936733027u32 => Type::sp3c,
-    1936733282u32 => Type::sp4b,
-    1936734518u32 => Type::sp96,
-    1936745012u32 => Type::spb4,
-    1936746032u32 => Type::spf0,
-    2070968173u32 => Type::pwm,
-    1969828658u32 => Type::ui32,
-    1969829920u32 => Type::ui8,
-    1718378855u32 => Type::flag,
-    1969828150u32 => Type::ui16,
-    1751480415u32 => Type::hex,
-    1667774506u32 => Type::ch8,
-    1718630456u32 => Type::fp88,
-    2069982313u32 => Type::ali,
-    2069982320u32 => Type::alp,
-    2069982307u32 => Type::alc,
-    1718628710u32 => Type::fp1f,
-    2069982326u32 => Type::alv,
-    1936273718u32 => Type::si16,
-    1936734263u32 => Type::sp87,
-    1936734008u32 => Type::sp78,
-    1936733753u32 => Type::sp69,
-    1718383648u32 => Type::flt,
-    1936733537u32 => Type::sp5a,
-    1936275488u32 => Type::si8,
-    2070113379u32 => Type::clc,
-    2070113384u32 => Type::clh,
-    2070439017u32 => Type::hdi,
-    2070702445u32 => Type::lim,
-    2070702946u32 => Type::lkb,
-    2070702963u32 => Type::lks,
-    1718641970u32 => Type::fpe2,
-    2070307955u32 => Type::fds,
-    1718630201u32 => Type::fp79,
-    1718629985u32 => Type::fp6a,
-    2070770547u32 => Type::mss,
-    1919252000u32 => Type::rev,
-    1667785074u32 => Type::char,
-};
-
-pub fn parse_type(type_: u32) -> Option<Type> {
-    TYPES.get(&type_).cloned()
+pub fn lookup_type(input: u32) -> Option<Type> {
+    match input {
+        1718629730u32 => Some(Type::fp5b),
+        1718640950u32 => Some(Type::fpa6),
+        1718641460u32 => Some(Type::fpc4),
+        1718629475u32 => Some(Type::fp4c),
+        1936732517u32 => Some(Type::sp1e),
+        1936733027u32 => Some(Type::sp3c),
+        1936733282u32 => Some(Type::sp4b),
+        1936734518u32 => Some(Type::sp96),
+        1936745012u32 => Some(Type::spb4),
+        1936746032u32 => Some(Type::spf0),
+        2070968173u32 => Some(Type::pwm),
+        1969828658u32 => Some(Type::ui32),
+        1969829920u32 => Some(Type::ui8),
+        1718378855u32 => Some(Type::flag),
+        1969828150u32 => Some(Type::ui16),
+        1751480415u32 => Some(Type::hex),
+        1667774506u32 => Some(Type::ch8),
+        1718630456u32 => Some(Type::fp88),
+        2069982313u32 => Some(Type::ali),
+        2069982320u32 => Some(Type::alp),
+        2069982307u32 => Some(Type::alc),
+        1718628710u32 => Some(Type::fp1f),
+        2069982326u32 => Some(Type::alv),
+        1936273718u32 => Some(Type::si16),
+        1936734263u32 => Some(Type::sp87),
+        1936734008u32 => Some(Type::sp78),
+        1936733753u32 => Some(Type::sp69),
+        1718383648u32 => Some(Type::flt),
+        1936733537u32 => Some(Type::sp5a),
+        1936275488u32 => Some(Type::si8),
+        2070113379u32 => Some(Type::clc),
+        2070113384u32 => Some(Type::clh),
+        2070439017u32 => Some(Type::hdi),
+        2070702445u32 => Some(Type::lim),
+        2070702946u32 => Some(Type::lkb),
+        2070702963u32 => Some(Type::lks),
+        1718641970u32 => Some(Type::fpe2),
+        2070307955u32 => Some(Type::fds),
+        1718630201u32 => Some(Type::fp79),
+        1718629985u32 => Some(Type::fp6a),
+        2070770547u32 => Some(Type::mss),
+        1919252000u32 => Some(Type::rev),
+        1667785074u32 => Some(Type::char),
+        _ => None,
+    }
 }
 
 pub fn parse_value(data_size: u32, data_type: Type, bytes: [u8; 32]) -> f32 {
