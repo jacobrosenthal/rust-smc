@@ -65,7 +65,8 @@ pub enum Key {
 impl Key {
     pub fn name(&self) -> &str {
         match self {
-            _ => self.get_str("Name").unwrap_or_else(|| ""),
+            //explicit fail if someone fat fingers strum strings
+            _ => self.get_str("Name").unwrap(),
         }
     }
 
@@ -78,16 +79,18 @@ impl Key {
     pub fn kind(&self) -> Kind {
         match self {
             _ => {
-                let kind = self.get_str("Kind").unwrap_or_else(|| "");
-                Kind::from_str(kind).unwrap_or_else(|_| Kind::Unknown)
+                //explicit fail if someone fat fingers strum strings
+                let kind = self.get_str("Kind").unwrap();
+                Kind::from_str(kind).unwrap()
             }
         }
     }
     pub fn subsystem(&self) -> Subsystem {
         match self {
             _ => {
-                let subsystem = self.get_str("Subsystem").unwrap_or_else(|| "");
-                Subsystem::from_str(subsystem).unwrap_or_else(|_| Subsystem::Unknown)
+                //explicit fail if someone fat fingers strum strings
+                let subsystem = self.get_str("Subsystem").unwrap();
+                Subsystem::from_str(subsystem).unwrap()
             }
         }
     }
