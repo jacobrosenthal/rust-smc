@@ -6,6 +6,8 @@ use strum_macros::{EnumIter, EnumProperty};
 //cant use display as then Custom's name cant be matched
 #[derive(EnumIter, Debug, EnumProperty)]
 pub enum Key {
+    //cant &str here sadly as we need a lifetime and EnumIter can't handle that case
+    Custom(String, Kind, Subsystem),
     #[strum(props(Name = "TCXC", Kind = "Temperature", Subsystem = "Cpu"))]
     TCXC,
     #[strum(props(Name = "TC0P", Kind = "Temperature", Subsystem = "Cpu"))]
@@ -65,6 +67,7 @@ pub enum Key {
 impl Key {
     pub fn name(&self) -> &str {
         match self {
+            Key::Custom(name, _kind, _subsystem) => name,
             //explicit fail if someone fat fingers strum strings
             _ => self.get_str("Name").unwrap(),
         }
@@ -72,12 +75,17 @@ impl Key {
 
     pub fn value(&self) -> u32 {
         match self {
+            Key::Custom(name, _kind, _subsystem) => {
+                assert_eq!(4, name.len());
+                translate(name)
+            }
             _ => translate(&self.name()),
         }
     }
 
     pub fn kind(&self) -> Kind {
         match self {
+            Key::Custom(_name, kind, _subsystem) => kind.clone(),
             _ => {
                 //explicit fail if someone fat fingers strum strings
                 let kind = self.get_str("Kind").unwrap();
@@ -85,8 +93,10 @@ impl Key {
             }
         }
     }
+
     pub fn subsystem(&self) -> Subsystem {
         match self {
+            Key::Custom(_name, _kind, subsystem) => subsystem.clone(),
             _ => {
                 //explicit fail if someone fat fingers strum strings
                 let subsystem = self.get_str("Subsystem").unwrap();
