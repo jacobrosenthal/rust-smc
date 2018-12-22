@@ -1,5 +1,7 @@
 use std::convert::AsMut;
 
+use strum_macros::EnumString;
+
 //https://stackoverflow.com/questions/37668886/slice-to-fixed-size-array
 fn clone_into_array<A, T>(slice: &[T]) -> A
 where
@@ -11,7 +13,7 @@ where
     a
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, Debug, EnumString, PartialEq)]
 pub enum Subsystem {
     Cpu,
     Memory,
@@ -24,11 +26,23 @@ pub enum Subsystem {
     Unknown,
 }
 
-#[derive(PartialEq)]
+impl Default for Subsystem {
+    fn default() -> Subsystem {
+        Subsystem::Unknown
+    }
+}
+
+#[derive(Clone, Copy, Debug, EnumString, PartialEq)]
 pub enum Kind {
     Temperature,
     Fan,
     Unknown,
+}
+
+impl Default for Kind {
+    fn default() -> Kind {
+        Kind::Unknown
+    }
 }
 
 #[allow(non_camel_case_types)]
@@ -168,4 +182,15 @@ pub fn parse_value(data_size: u32, data_type: Type, bytes: [u8; 32]) -> f32 {
     };
 
     value
+}
+
+pub fn translate(name: &str) -> u32 {
+    let byte_array_ref = name.as_bytes();
+    let byte_array: [u8; 4] = [
+        byte_array_ref[0],
+        byte_array_ref[1],
+        byte_array_ref[2],
+        byte_array_ref[3],
+    ];
+    u32::from_be_bytes(byte_array)
 }

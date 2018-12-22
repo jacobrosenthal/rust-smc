@@ -1,149 +1,94 @@
-use crate::general::{Kind, Subsystem};
-use strum_macros::EnumIter;
+use crate::general::{translate, Kind, Subsystem};
+use std::str::FromStr;
+use strum::EnumProperty;
+use strum_macros::{EnumIter, EnumProperty};
 
-#[derive(EnumIter, Debug)]
+//cant use display as then Custom's name cant be matched
+#[derive(EnumIter, Debug, EnumProperty)]
 pub enum Key {
+    #[strum(props(Name = "TCXC", Kind = "Temperature", Subsystem = "Cpu"))]
     TCXC,
+    #[strum(props(Name = "TC0P", Kind = "Temperature", Subsystem = "Cpu"))]
     TC0P,
+    #[strum(props(Name = "TM0P", Kind = "Temperature", Subsystem = "Cpu"))]
     TM0P,
+    #[strum(props(Name = "TC0H", Kind = "Temperature", Subsystem = "Cpu"))]
     TC0H,
+    #[strum(props(Name = "TC0D", Kind = "Temperature", Subsystem = "Cpu"))]
     TC0D,
+    #[strum(props(Name = "TC0E", Kind = "Temperature", Subsystem = "Cpu"))]
     TC0E,
+    #[strum(props(Name = "TC0F", Kind = "Temperature", Subsystem = "Cpu"))]
     TC0F,
+    #[strum(props(Name = "TC1C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC1C,
+    #[strum(props(Name = "TC2C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC2C,
+    #[strum(props(Name = "TC3C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC3C,
+    #[strum(props(Name = "TC4C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC4C,
+    #[strum(props(Name = "TC5C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC5C,
+    #[strum(props(Name = "TC6C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC6C,
+    #[strum(props(Name = "TC7C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC7C,
+    #[strum(props(Name = "TC8C", Kind = "Temperature", Subsystem = "Cpu"))]
     TC8C,
+    #[strum(props(Name = "TCAH", Kind = "Temperature", Subsystem = "Cpu"))]
     TCAH,
+    #[strum(props(Name = "TCAD", Kind = "Temperature", Subsystem = "Cpu"))]
     TCAD,
+    #[strum(props(Name = "TC1P", Kind = "Temperature", Subsystem = "Cpu"))]
     TC1P,
+    #[strum(props(Name = "TC1H", Kind = "Temperature", Subsystem = "Cpu"))]
     TC1H,
+    #[strum(props(Name = "TC1D", Kind = "Temperature", Subsystem = "Cpu"))]
     TC1D,
+    #[strum(props(Name = "TC1E", Kind = "Temperature", Subsystem = "Cpu"))]
     TC1E,
+    #[strum(props(Name = "TC1F", Kind = "Temperature", Subsystem = "Cpu"))]
     TC1F,
+    #[strum(props(Name = "TCBH", Kind = "Temperature", Subsystem = "Cpu"))]
     TCBH,
+    #[strum(props(Name = "TCBD", Kind = "Temperature", Subsystem = "Cpu"))]
     TCBD,
+    #[strum(props(Name = "TCSC", Kind = "Temperature", Subsystem = "SystemAgent"))]
     TCSC,
+    #[strum(props(Name = "TCSA", Kind = "Temperature", Subsystem = "SystemAgent"))]
     TCSA,
+    #[strum(props(Name = "TCGC", Kind = "Temperature", Subsystem = "Gpu"))]
     TCGC,
 }
 
 impl Key {
-    //could use strum for this, but strum only does string atm
-    //and I need to define kind and subsytem etc so might as well
-    //just do it this way for now
     pub fn name(&self) -> &str {
-        match *self {
-            Key::TCXC => "TCXC",
-            Key::TC0P => "TC0P",
-            Key::TM0P => "TM0P",
-            Key::TC0H => "TC0H",
-            Key::TC0D => "TC0D",
-            Key::TC0E => "TC0E",
-            Key::TC0F => "TC0F",
-            Key::TC1C => "TC1C",
-            Key::TC2C => "TC2C",
-            Key::TC3C => "TC3C",
-            Key::TC4C => "TC4C",
-            Key::TC5C => "TC5C",
-            Key::TC6C => "TC6C",
-            Key::TC7C => "TC7C",
-            Key::TC8C => "TC8C",
-            Key::TCAH => "TCAH",
-            Key::TCAD => "TCAD",
-            Key::TC1P => "TC1P",
-            Key::TC1H => "TC1H",
-            Key::TC1D => "TC1D",
-            Key::TC1E => "TC1E",
-            Key::TC1F => "TC1F",
-            Key::TCBH => "TCBH",
-            Key::TCBD => "TCBD",
-            Key::TCSC => "TCSC",
-            Key::TCSA => "TCSA",
-            Key::TCGC => "TCGC",
-            // _ => "",
+        match self {
+            _ => self.get_str("Name").unwrap_or_else(|| ""),
         }
     }
 
     pub fn value(&self) -> u32 {
-        let byte_array_ref = self.name().as_bytes();
-        let byte_array: [u8; 4] = [
-            byte_array_ref[0],
-            byte_array_ref[1],
-            byte_array_ref[2],
-            byte_array_ref[3],
-        ];
-        u32::from_be_bytes(byte_array)
-    }
-
-    //should there be an unknown? or.. use None?
-    #[allow(dead_code)]
-    pub fn kind(&self) -> Kind {
-        match *self {
-            Key::TCXC => Kind::Temperature,
-            Key::TC0P => Kind::Temperature,
-            Key::TM0P => Kind::Temperature,
-            Key::TC0H => Kind::Temperature,
-            Key::TC0D => Kind::Temperature,
-            Key::TC0E => Kind::Temperature,
-            Key::TC0F => Kind::Temperature,
-            Key::TC1C => Kind::Temperature,
-            Key::TC2C => Kind::Temperature,
-            Key::TC3C => Kind::Temperature,
-            Key::TC4C => Kind::Temperature,
-            Key::TC5C => Kind::Temperature,
-            Key::TC6C => Kind::Temperature,
-            Key::TC7C => Kind::Temperature,
-            Key::TC8C => Kind::Temperature,
-            Key::TCAH => Kind::Temperature,
-            Key::TCAD => Kind::Temperature,
-            Key::TC1P => Kind::Temperature,
-            Key::TC1H => Kind::Temperature,
-            Key::TC1D => Kind::Temperature,
-            Key::TC1E => Kind::Temperature,
-            Key::TC1F => Kind::Temperature,
-            Key::TCBH => Kind::Temperature,
-            Key::TCBD => Kind::Temperature,
-            Key::TCSC => Kind::Temperature,
-            Key::TCSA => Kind::Temperature,
-            Key::TCGC => Kind::Temperature,
+        match self {
+            _ => translate(&self.name()),
         }
     }
 
-    #[allow(dead_code)]
+    pub fn kind(&self) -> Kind {
+        match self {
+            _ => {
+                let kind = self.get_str("Kind").unwrap_or_else(|| "");
+                Kind::from_str(kind).unwrap_or_else(|_| Kind::Unknown)
+            }
+        }
+    }
     pub fn subsystem(&self) -> Subsystem {
-        match *self {
-            Key::TCXC => Subsystem::Cpu,
-            Key::TC0P => Subsystem::Cpu,
-            Key::TM0P => Subsystem::Cpu,
-            Key::TC0H => Subsystem::Cpu,
-            Key::TC0D => Subsystem::Cpu,
-            Key::TC0E => Subsystem::Cpu,
-            Key::TC0F => Subsystem::Cpu,
-            Key::TC1C => Subsystem::Cpu,
-            Key::TC2C => Subsystem::Cpu,
-            Key::TC3C => Subsystem::Cpu,
-            Key::TC4C => Subsystem::Cpu,
-            Key::TC5C => Subsystem::Cpu,
-            Key::TC6C => Subsystem::Cpu,
-            Key::TC7C => Subsystem::Cpu,
-            Key::TC8C => Subsystem::Cpu,
-            Key::TCAH => Subsystem::Cpu,
-            Key::TCAD => Subsystem::Cpu,
-            Key::TC1P => Subsystem::Cpu,
-            Key::TC1H => Subsystem::Cpu,
-            Key::TC1D => Subsystem::Cpu,
-            Key::TC1E => Subsystem::Cpu,
-            Key::TC1F => Subsystem::Cpu,
-            Key::TCBH => Subsystem::Cpu,
-            Key::TCBD => Subsystem::Cpu,
-            Key::TCSC => Subsystem::SystemAgent,
-            Key::TCSA => Subsystem::SystemAgent,
-            Key::TCGC => Subsystem::Gpu,
+        match self {
+            _ => {
+                let subsystem = self.get_str("Subsystem").unwrap_or_else(|| "");
+                Subsystem::from_str(subsystem).unwrap_or_else(|_| Subsystem::Unknown)
+            }
         }
     }
 }
