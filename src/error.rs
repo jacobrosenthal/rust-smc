@@ -1,7 +1,6 @@
 use std::error::Error;
 use std::ffi::NulError;
 use std::fmt;
-use std::option::NoneError;
 
 pub type SmcResult<T> = Result<T, SmcError>;
 
@@ -33,11 +32,5 @@ impl Error for SmcError {
 impl From<NulError> for SmcError {
     fn from(err: NulError) -> Self {
         SmcError::new(err.description())
-    }
-}
-
-impl From<NoneError> for SmcError {
-    fn from(_err: NoneError) -> Self {
-        SmcError::new("")
     }
 }

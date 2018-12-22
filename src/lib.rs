@@ -1,5 +1,4 @@
 #![feature(slice_patterns)]
-#![feature(try_trait)]
 #![feature(plugin)]
 #![plugin(phf_macros)]
 

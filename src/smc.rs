@@ -119,7 +119,14 @@ impl<'a> Smc {
         };
 
         let out_struct = self.read(in_struct)?;
-        let data_type = parse_type(key_info.data_type)?;
+
+        let data_type = parse_type(key_info.data_type);
+
+        let data_type = match data_type {
+            Some(file) => file,
+            None => return Err(SmcError::new("Parse Key Type failed")),
+        };
+
         let value = parse_value(key_info.data_size, data_type, out_struct.bytes);
 
         Ok(value)
