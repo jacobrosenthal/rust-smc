@@ -323,6 +323,82 @@ pub enum Key {
     PDTR,
     #[strum(props(Name = "PSTR", Kind = "Power", Subsystem = "Mainboard", Detail = "System Total"))]
     PSTR,
+    #[strum(props(Name = "FNum", Kind = "Fan", Subsystem = "Unknown", Detail = "Total Fans"))]
+    FNum,
+    #[strum(props(Name = "F0Ac", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 1 RPM"))]
+    F0Ac,
+    #[strum(props(Name = "F1Ac", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 2 RPM"))]
+    F1Ac,
+    #[strum(props(Name = "F2Ac", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 3 RPM"))]
+    F2Ac,
+    #[strum(props(Name = "F3Ac", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 4 RPM"))]
+    F3Ac,
+    #[strum(props(Name = "F4Ac", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 5 RPM"))]
+    F4Ac,
+    #[strum(props(Name = "F5Ac", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 6 RPM"))]
+    F5Ac,
+    #[strum(props(Name = "F0Mn", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 1 Min RPM"))]
+    F0Mn,
+    #[strum(props(Name = "F1Mn", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 2 Min RPM"))]
+    F1Mn,
+    #[strum(props(Name = "F2Mn", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 3 Min RPM"))]
+    F2Mn,
+    #[strum(props(Name = "F3Mn", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 4 Min RPM"))]
+    F3Mn,
+    #[strum(props(Name = "F4Mn", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 5 Min RPM"))]
+    F4Mn,
+    #[strum(props(Name = "F5Mn", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 6 Min RPM"))]
+    F5Mn,
+    #[strum(props(Name = "F0Mx", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 1 Max RPM"))]
+    F0Mx,
+    #[strum(props(Name = "F1Mx", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 2 Max RPM"))]
+    F1Mx,
+    #[strum(props(Name = "F2Mx", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 3 Max RPM"))]
+    F2Mx,
+    #[strum(props(Name = "F3Mx", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 4 Max RPM"))]
+    F3Mx,
+    #[strum(props(Name = "F4Mx", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 5 Max RPM"))]
+    F4Mx,
+    #[strum(props(Name = "F5Mx", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 6 Max RPM"))]
+    F5Mx,
+    #[strum(props(Name = "F0Sf", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 1 Safe RPM"))]
+    F0Sf,
+    #[strum(props(Name = "F1Sf", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 2 Safe RPM"))]
+    F1Sf,
+    #[strum(props(Name = "F2Sf", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 3 Safe RPM"))]
+    F2Sf,
+    #[strum(props(Name = "F3Sf", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 4 Safe RPM"))]
+    F3Sf,
+    #[strum(props(Name = "F4Sf", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 5 Safe RPM"))]
+    F4Sf,
+    #[strum(props(Name = "F5Sf", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 6 Safe RPM"))]
+    F5Sf,
+    #[strum(props(Name = "F0Tg", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 1 Target RPM"))]
+    F0Tg,
+    #[strum(props(Name = "F1Tg", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 2 Target RPM"))]
+    F1Tg,
+    #[strum(props(Name = "F2Tg", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 3 Target RPM"))]
+    F2Tg,
+    #[strum(props(Name = "F3Tg", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 4 Target RPM"))]
+    F3Tg,
+    #[strum(props(Name = "F4Tg", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 5 Target RPM"))]
+    F4Tg,
+    #[strum(props(Name = "F5Tg", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 6 Target RPM"))]
+    F5Tg,
+    #[strum(props(Name = "FS! ", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan Mode"))]
+    FS,
+    #[strum(props(Name = "F0Md", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 1 Mode"))]
+    F0Md,
+    #[strum(props(Name = "F1Md", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 2 Mode"))]
+    F1Md,
+    #[strum(props(Name = "F2Md", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 3 Mode"))]
+    F2Md,
+    #[strum(props(Name = "F3Md", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 4 Mode"))]
+    F3Md,
+    #[strum(props(Name = "F4Md", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 5 Mode"))]
+    F4Md,
+    #[strum(props(Name = "F5Md", Kind = "Fan", Subsystem = "Unknown", Detail = "Fan 6 Mode"))]
+    F5Md,
 }
 
 impl Key {
