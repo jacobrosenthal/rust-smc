@@ -16,17 +16,48 @@ The key enum also have Kind and Subsystem labels which can be used to return an 
 ```
     let sensors = smc.find(|key| key.kind() == Kind::Temperature);
 ```
+or you can poll all the sensors we know about on your sytem
 ```
-$ cargo run --example temperature
-🌡️ TCXC 61.97
-🌡️ TC0P 52.25
-🌡️ TM0P 45.62
-🌡️ TC0E 61.53
-🌡️ TC0F 64.47
-🌡️ TC1C 58.00
-🌡️ TC2C 60.00
-🌡️ TCSA 60.00
-🌡️ TCGC 60.00
+$ cargo run --example all
+🌡️ TCXC 48.50 PECI CPU
+🌡️ TC0P 39.00 CPU 1 Proximity
+🌡️ TC0E 129.00 CPU 1
+🌡️ TC0F 129.00 CPU 1
+🌡️ TC1C 49.00 CPU Core 1
+🌡️ TC2C 49.00 CPU Core 2
+🌡️ TCSA 46.00 Platform Environment Control Interface (PECI) System Agent
+🌡️ TCGC 46.00 Platform Environment Control Interface (PECI) GPU
+🌡️ Ts0S 129.00 Memory Proximity
+🌡️ TM0P 36.38 Memory Slot Proximity
+🌡️ TPCD 43.00 Platform Controller Hub Die
+🌡️ Th1H 29.56 Heatpipe 2
+🌡️ Tm0P 32.12 Mainboard Proximity
+🌡️ Ts0P 27.81 Palm Rest L
+🌡️ TB1T 26.70 Battery 1
+🌡️ TB2T 26.20 Battery 2
+⚡ VC1C 0.00 CPU Core 2
+⚡ VD0R 0.00 Mainboard S0 Rail
+⚡ VP0R 0.00 12V Rail
+🚰 IC1C 0.00 CPU VccIO
+🚰 IC0R 0.00 CPU Rail
+🚰 IM0C 0.00 Memory Controller
+🚰 ID0R 0.00 Mainboard S0 Rail
+🚰 IO0R 0.00 Misc. Rail
+🚰 IPBR 0.76 Charger BMON
+🔌 PC1C 0.00 CPU Core 2
+🔌 PCPC 0.86 CPU Cores
+🔌 PCPG 0.06 CPU GFX
+🔌 PC0R 0.00 Mainboard S0 Rail
+🔌 PO0R 0.00 Misc. Rail
+🔌 PBLC 0.00 Battery Rail
+🔌 PDTR 0.00 DC In Total
+🔌 PSTR 5.24 System Total
+💨 FNum 1.00 Total Fans
+💨 F0Ac 1220.00 Fan 1 RPM
+💨 F0Mn 1200.00 Fan 1 Min RPM
+💨 F0Mx 6500.00 Fan 1 Max RPM
+💨 F0Tg 1200.00 Fan 1 Target RPM
+💨 FS!  0.00 Fan Mode
 ```
 
 Not all keys will be known for all devices as this space is largely undocumented. As such Ive included a fuzzing example to find new undocumented keys on your machine:
