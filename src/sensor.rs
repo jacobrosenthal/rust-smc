@@ -19,12 +19,22 @@ impl<'a> fmt::Display for Sensor<'a> {
         match self.kind() {
             Kind::Temperature => kind = "🌡️".to_string(),
             Kind::Fan => kind = "💨".to_string(),
+            Kind::Power => kind = "🔌".to_string(),
+            Kind::Current => kind = "🚰".to_string(),
+            Kind::Voltage => kind = "⚡".to_string(),
             Kind::Unknown => kind = "👽".to_string(),
         }
 
         let reading = self.read().unwrap_or_else(|_| 0.0);
 
-        write!(f, "{} {} {:.*}", kind, self.name(), 2, reading)
+        write!(
+            f,
+            "{} {} {:.2} {}",
+            kind,
+            self.name(),
+            reading,
+            self.key.detail()
+        )
     }
 }
 

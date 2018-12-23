@@ -17,12 +17,8 @@ where
 pub enum Subsystem {
     Cpu,
     Memory,
-    Bus,
     Gpu,
-    Sensor,
-    Battery,
     Mainboard,
-    SystemAgent,
     Unknown,
 }
 
@@ -36,6 +32,9 @@ impl Default for Subsystem {
 pub enum Kind {
     Temperature,
     Fan,
+    Voltage,
+    Current,
+    Power,
     Unknown,
 }
 
