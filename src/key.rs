@@ -1,10 +1,10 @@
 use crate::general::{translate, Kind, Subsystem};
 use std::str::FromStr;
 use strum::EnumProperty;
-use strum_macros::{EnumIter, EnumProperty};
+use strum_macros::{EnumIter, EnumProperty, EnumString};
 
 //cant use display as then Custom's name cant be matched
-#[derive(EnumIter, Debug, EnumProperty)]
+#[derive(EnumIter, Debug, EnumProperty, EnumString)]
 pub enum Key {
     //cant &str here sadly as we need a lifetime and EnumIter can't handle that case
     Custom(String, Kind, Subsystem),
