@@ -19,6 +19,6 @@ strum_macros = "0.11.0"
 
 
 [dev_dependencies]
-# passgen = { git = "https://gitlab.com/NateDogg1232/passgen-rs"}
-passgen = {path = "../passgen-rs"}
+passgen = { git = "https://gitlab.com/NateDogg1232/passgen-rs"}
+# passgen = {path = "../passgen-rs"}
 
