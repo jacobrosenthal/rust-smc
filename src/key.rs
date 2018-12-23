@@ -328,7 +328,10 @@ pub enum Key {
 impl Key {
     pub fn name(&self) -> &str {
         match self {
-            Key::Custom(name, _kind, _subsystem) => name,
+            Key::Custom(name, _kind, _subsystem) => {
+                // assert_eq!(4, name.len());
+                name
+            }
             //explicit fail if someone fat fingers strum strings
             _ => self.get_str("Name").unwrap(),
         }
@@ -336,18 +339,16 @@ impl Key {
 
     pub fn detail(&self) -> &str {
         match self {
-            //explicit fail if someone fat fingers strum strings
-            _ => self.get_str("Detail").unwrap(),
+            //allow no Detail column
+            _ => self.get_str("Detail").unwrap_or_else(|| ""),
         }
     }
 
     pub fn value(&self) -> u32 {
-        match self {
-            Key::Custom(name, _kind, _subsystem) => {
-                assert_eq!(4, name.len());
-                translate(name)
-            }
-            _ => translate(&self.name()),
+        //Custom's default name becomes ""
+        match self.name().len() {
+            4 => translate(&self.name()),
+            _ => 0,
         }
     }
 
