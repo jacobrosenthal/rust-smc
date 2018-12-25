@@ -1,31 +1,23 @@
 use passgen::password::PasswordGenerator;
-use smc::{Key, Kind, Smc, SmcResult, Subsystem};
-use std::str::FromStr;
+use smc::{Smc, SmcResult};
 
 fn main() -> SmcResult<()> {
     let smc = Smc::new()?;
 
-    //I dont think space is a character in passgen and I know there are key that have a space as fourth char
+    //not exaustive atm, just random search
+    //also doesnt handle spaces
     let passgen = PasswordGenerator::new(4)
-        .symbols(false)
+        .symbols(true)
         .numbers(true)
         .uppercase(true)
         .lowercase(true)
-        .begin_with_letter(true);
+        .begin_with_letter(false);
 
     loop {
         let name = passgen.generate().unwrap();
 
-        //if this is a known key, just end this iteration
-        match Key::from_str(&name.clone()) {
-            Ok(_v) => continue,
-            Err(_e) => {}
-        };
-
-        let custom = Key::Custom(name, Kind::Unknown, Subsystem::Unknown);
-
         //if its not a key, end this iteration
-        let sensor = match smc.get_sensor(custom) {
+        let sensor = match smc.get_sensor_by_name(&name) {
             Ok(v) => v,
             Err(_e) => continue,
         };

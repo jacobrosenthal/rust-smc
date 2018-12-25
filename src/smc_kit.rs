@@ -48,3 +48,6 @@ pub const SMC_CMD_READ_KEYINFO: u8 = 9;
 
 // #define SMC_CMD_READ_BYTES    5
 pub const SMC_CMD_READ_BYTES: u8 = 5;
+
+// #define SMC_CMD_READ_INDEX    8
+pub const SMC_CMD_READ_INDEX: u8 = 8;

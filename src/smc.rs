@@ -10,14 +10,13 @@ use IOKit_sys::{
 };
 
 use crate::error::{SmcError, SmcResult};
-use crate::general::{lookup_type, parse_value};
-use crate::key::Key;
-use crate::sensor::Sensor;
-use crate::smc_kit::{
-    SMCKeyData_keyInfo_t, SMCKeyData_t, KERNEL_INDEX_SMC, SMC_CMD_READ_BYTES, SMC_CMD_READ_KEYINFO,
-};
+use crate::general::{lookup_type, parse_value, translate};
 
-use strum::IntoEnumIterator;
+use crate::sensor::{Sensor, SensorIter};
+use crate::smc_kit::{
+    SMCKeyData_keyInfo_t, SMCKeyData_t, KERNEL_INDEX_SMC, SMC_CMD_READ_BYTES, SMC_CMD_READ_INDEX,
+    SMC_CMD_READ_KEYINFO,
+};
 
 pub struct Smc {
     connection: io_connect_t,
@@ -43,22 +42,44 @@ impl<'a> Smc {
         Ok(Smc { connection })
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = Key> + Clone {
-        Key::iter()
+    pub fn iter(&self) -> impl Iterator<Item = Sensor> + Clone {
+        SensorIter::new(self).unwrap()
     }
 
-    pub fn find<F: Clone + Fn(&Key) -> bool>(
-        &self,
-        pred: F,
-    ) -> impl Iterator<Item = Sensor> + Clone {
-        self.iter()
-            .filter(pred)
-            .map(move |key| Sensor::new(key, &self))
-            .filter_map(Result::ok)
+    // pub fn find<F: Clone + Fn(&Key) -> bool>(
+    //     &self,
+    //     pred: F,
+    // ) -> impl Iterator<Item = Sensor> + Clone {
+    //     self.iter()
+    //         .filter(pred)
+    //         .map(move |key| Sensor::new(key, &self))
+    //         .filter_map(Result::ok)
+    // }
+
+    pub fn get_sensor_by_name(&'a self, name: &str) -> SmcResult<Sensor<'a>> {
+        assert_eq!(4, name.len());
+        Sensor::new(translate(name), &self)
     }
 
-    pub fn get_sensor(&'a self, key: Key) -> SmcResult<Sensor<'a>> {
-        Sensor::new(key, &self)
+    pub fn get_sensor_by_value(&'a self, value: u32) -> SmcResult<Sensor<'a>> {
+        Sensor::new(value, &self)
+    }
+
+    pub fn get_sensor_by_index(&'a self, index: u32) -> SmcResult<Sensor<'a>> {
+        let value = self.get_key_by_index(index)?;
+        Sensor::new(value, &self)
+    }
+
+    pub fn get_key_by_index(&self, index: u32) -> SmcResult<u32> {
+        let in_struct = SMCKeyData_t {
+            data8: SMC_CMD_READ_INDEX,
+            data32: index,
+            ..Default::default()
+        };
+
+        let out_struct = self.read(in_struct)?;
+
+        Ok(out_struct.key)
     }
 
     fn read(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
@@ -110,10 +131,10 @@ impl<'a> Smc {
         Ok(out_struct.key_info)
     }
 
-    pub(crate) fn read_key(&self, key: &Key, key_info: SMCKeyData_keyInfo_t) -> SmcResult<f32> {
+    pub(crate) fn read_key(&self, value: u32, key_info: SMCKeyData_keyInfo_t) -> SmcResult<f32> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_BYTES,
-            key: key.value(),
+            key: value,
             key_info,
             ..Default::default()
         };
@@ -130,6 +151,11 @@ impl<'a> Smc {
         let value = parse_value(key_info.data_size, data_type, out_struct.bytes);
 
         Ok(value)
+    }
+
+    pub fn get_key_count(&self) -> SmcResult<f32> {
+        let sensor = self.get_sensor_by_name("#KEY")?;
+        sensor.read()
     }
 }
 

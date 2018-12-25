@@ -1,10 +1,10 @@
-use smc::{Key, Smc, SmcResult};
+use smc::{Smc, SmcResult};
 use std::{thread, time};
 
 fn main() -> SmcResult<()> {
     let smc = Smc::new()?;
 
-    let sensor = smc.get_sensor(Key::TCXC)?;
+    let sensor = smc.get_sensor_by_name("TCXC")?;
 
     loop {
         println!("{:?}, {}", sensor.name(), sensor.read()?);
