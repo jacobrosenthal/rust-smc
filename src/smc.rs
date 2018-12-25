@@ -46,43 +46,28 @@ impl<'a> Smc {
         SensorIter::new(self).unwrap()
     }
 
-    // pub fn find<F: Clone + Fn(&Key) -> bool>(
-    //     &self,
-    //     pred: F,
-    // ) -> impl Iterator<Item = Sensor> + Clone {
-    //     self.iter()
-    //         .filter(pred)
-    //         .map(move |key| Sensor::new(key, &self))
-    //         .filter_map(Result::ok)
-    // }
-
     pub fn get_sensor_by_name(&'a self, name: &str) -> SmcResult<Sensor<'a>> {
         assert_eq!(4, name.len());
         Sensor::new(translate(name), &self)
     }
 
-    pub fn get_sensor_by_value(&'a self, value: u32) -> SmcResult<Sensor<'a>> {
-        Sensor::new(value, &self)
+    pub fn get_sensor_by_key(&'a self, key: u32) -> SmcResult<Sensor<'a>> {
+        Sensor::new(key, &self)
     }
 
     pub fn get_sensor_by_index(&'a self, index: u32) -> SmcResult<Sensor<'a>> {
-        let value = self.get_key_by_index(index)?;
-        Sensor::new(value, &self)
-    }
-
-    pub fn get_key_by_index(&self, index: u32) -> SmcResult<u32> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_INDEX,
             data32: index,
             ..Default::default()
         };
 
-        let out_struct = self.read(in_struct)?;
+        let out_struct = self.call(in_struct)?;
 
-        Ok(out_struct.key)
+        Sensor::new(out_struct.key, &self)
     }
 
-    fn read(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
+    fn call(&self, mut in_struct: SMCKeyData_t) -> SmcResult<SMCKeyData_t> {
         let innn: *const c_void = &mut in_struct as *const _ as *const c_void;
 
         let mut out_struct: SMCKeyData_t = Default::default();
@@ -120,26 +105,26 @@ impl<'a> Smc {
         Ok(out_struct)
     }
 
-    pub(crate) fn read_key_info(&self, key_sum: u32) -> SmcResult<SMCKeyData_keyInfo_t> {
+    pub(crate) fn get_key_info(&self, key_sum: u32) -> SmcResult<SMCKeyData_keyInfo_t> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_KEYINFO,
             key: key_sum,
             ..Default::default()
         };
 
-        let out_struct = self.read(in_struct)?;
+        let out_struct = self.call(in_struct)?;
         Ok(out_struct.key_info)
     }
 
-    pub(crate) fn read_key(&self, value: u32, key_info: SMCKeyData_keyInfo_t) -> SmcResult<f32> {
+    pub(crate) fn read(&self, key: u32, key_info: SMCKeyData_keyInfo_t) -> SmcResult<f32> {
         let in_struct = SMCKeyData_t {
             data8: SMC_CMD_READ_BYTES,
-            key: value,
+            key,
             key_info,
             ..Default::default()
         };
 
-        let out_struct = self.read(in_struct)?;
+        let out_struct = self.call(in_struct)?;
 
         let data_type = lookup_type(key_info.data_type);
 

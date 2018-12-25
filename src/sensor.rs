@@ -7,7 +7,7 @@ use std::fmt;
 
 pub struct Sensor<'a> {
     smc: &'a Smc,
-    value: u32,
+    key: u32,
     key_info: SMCKeyData_keyInfo_t,
 }
 
@@ -31,26 +31,26 @@ impl<'a> fmt::Display for Sensor<'a> {
 }
 
 impl<'a> Sensor<'a> {
-    pub(crate) fn new(value: u32, smc: &'a Smc) -> SmcResult<Sensor<'a>> {
+    pub(crate) fn new(key: u32, smc: &'a Smc) -> SmcResult<Sensor<'a>> {
         Ok(Sensor {
             smc: &smc,
-            value,
-            key_info: smc.read_key_info(value)?,
+            key,
+            key_info: smc.get_key_info(key)?,
         })
     }
 
     pub fn name(&self) -> String {
-        let array = self.value.to_be_bytes();
+        let array = self.key.to_be_bytes();
         let name = std::str::from_utf8(&array).unwrap();
         name.to_string()
     }
 
     pub fn read(&self) -> SmcResult<f32> {
-        self.smc.read_key(self.value, self.key_info)
+        self.smc.read(self.key, self.key_info)
     }
 
     pub fn kind(&self) -> Kind {
-        let array = self.value.to_be_bytes();
+        let array = self.key.to_be_bytes();
 
         match array[0] {
             84 => Kind::Temperature,
