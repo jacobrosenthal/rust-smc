@@ -4,6 +4,8 @@ use smc::{Smc, SmcResult};
 fn main() -> SmcResult<()> {
     let smc = Smc::new()?;
 
+    let sensors: Vec<String> = smc.iter().map(|sensor| sensor.name()).collect();
+
     //not exaustive atm, just random search
     //also doesnt handle spaces
     let passgen = PasswordGenerator::new(4)
@@ -16,13 +18,18 @@ fn main() -> SmcResult<()> {
     loop {
         let name = passgen.generate().unwrap();
 
-        //if its not a key, end this iteration
+        //if this is a known sensor, just end this iteration
+        if sensors.contains(&name) {
+            continue;
+        }
+
+        //if its not a valid sensor, end this iteration
         let sensor = match smc.get_sensor_by_name(&name) {
             Ok(v) => v,
             Err(_e) => continue,
         };
 
-        //sometimes they seem to be keys, but dont get values?
+        //sometimes they seem to be valid, but dont get values?
         match sensor.read() {
             Ok(v) => println!("found {} {}", sensor.name(), v),
             Err(_e) => println!("found {}", sensor.name()),
