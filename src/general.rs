@@ -14,21 +14,6 @@ where
 }
 
 #[derive(Clone, Copy, Debug, EnumString, PartialEq)]
-pub enum Subsystem {
-    Cpu,
-    Memory,
-    Gpu,
-    Mainboard,
-    Unknown,
-}
-
-impl Default for Subsystem {
-    fn default() -> Subsystem {
-        Subsystem::Unknown
-    }
-}
-
-#[derive(Clone, Copy, Debug, EnumString, PartialEq)]
 pub enum Kind {
     Temperature,
     Fan,

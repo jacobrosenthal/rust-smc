@@ -1,5 +1,5 @@
 mod general;
-pub use crate::general::{Kind, Subsystem, Type};
+pub use crate::general::{Kind, Type};
 
 mod error;
 pub use crate::error::{SmcError, SmcResult};
